@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import operations from '../../redux/operations';
+import { getAllContacts } from '../../redux/contacts-selectors';
 import styles from './ContactForm.module.css';
 
 class ContactForm extends Component {
@@ -20,7 +21,16 @@ class ContactForm extends Component {
   };
   handleSubmit = e => {
     e.preventDefault();
-    this.props.onSubmit(this.state);
+
+    const { contacts, onSubmit } = this.props;
+    const { name, number } = this.state;
+
+    contacts.find(contact => contact.name === name)
+      ? alert(`${name} is already in contacts`)
+      : contacts.find(contact => contact.number === number)
+      ? alert(`${number} is already in contacts`)
+      : onSubmit(this.state);
+
     this.reset();
   };
 
@@ -68,10 +78,14 @@ class ContactForm extends Component {
   }
 }
 
+const mapStateToProps = state => ({
+  contacts: getAllContacts(state),
+});
+
 const mapDispatchToProps = dispatch => ({
   onSubmit: (name, number) => {
     return dispatch(operations.addContact(name, number));
   },
 });
 
-export default connect(null, mapDispatchToProps)(ContactForm);
+export default connect(mapStateToProps, mapDispatchToProps)(ContactForm);
